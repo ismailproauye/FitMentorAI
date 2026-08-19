@@ -1,9 +1,9 @@
 fastapi
 uvicorn
-google-genai
-pillow
-python-multipart
 sqlalchemy
 pydantic
-python-jose[cryptography]
-passlib[bcrypt]
+python-jose
+passlib
+bcrypt
+google-genai
+pillow
