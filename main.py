@@ -82,12 +82,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def hash_password(password: str) -> str:
-    # Bcrypt limitinə qarşı təhlükəsizlik qorunması (maksimum 72 simvol)
-    safe_password = str(password)[:72]
+    # Bcrypt limitinə qarşı (maksimum 72 simvol) şifrəni kəsib təhlükəsiz hala gətirik
+    safe_password = password[:72] if len(password) > 72 else password
     return pwd_context.hash(safe_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    safe_password = str(plain_password)[:72]
+    safe_password = plain_password[:72] if len(plain_password) > 72 else plain_password
     return pwd_context.verify(safe_password, hashed_password)
 
 def create_access_token(data: dict):
