@@ -11,7 +11,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from google import genai
 from google.genai import types
 import PIL.Image
@@ -78,17 +78,18 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key-for-dev")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def hash_password(password: str) -> str:
-    # Bcrypt limitinə qarşı (maksimum 72 simvol) şifrəni kəsib təhlükəsiz hala gətirik
-    safe_password = password[:72] if len(password) > 72 else password
-    return pwd_context.hash(safe_password)
+    pwd_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    safe_password = plain_password[:72] if len(plain_password) > 72 else plain_password
-    return pwd_context.verify(safe_password, hashed_password)
+    pwd_bytes = plain_password.encode('utf-8')[:72]
+    hashed_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(pwd_bytes, hashed_bytes)
 
 def create_access_token(data: dict):
     to_encode = data.copy()
