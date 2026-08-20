@@ -1,624 +1,681 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <title>FitMentor AI - Smart Fitness Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { display: flex; height: 100vh; background-color: #0b111e; color: #94a3b8; overflow: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitMentor AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D1013;
+    --surface:#171B1F;
+    --surface-raised:#1F252B;
+    --accent:#FF5D2E;
+    --accent-dim:#7a2c15;
+    --teal:#33D6C0;
+    --teal-dim:#144a43;
+    --text-hi:#F2F4F5;
+    --text-mid:#9BA4AE;
+    --border:#262C32;
+    --danger:#FF6B6B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text-hi);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent);color:#0D1013;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 
-        /* Sağ Yuxarı Künc Üçün Bildiriş (Toast) Stili */
-        #toastContainer {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-        .toast {
-            background: #131d31;
-            color: #f8fafc;
-            border: 1px solid #1e293b;
-            padding: 14px 20px;
-            border-radius: 12px;
-            font-size: 14px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 280px;
-            pointer-events: auto;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-        }
-        .toast.success { border-color: #10b981; background: #064e3b; color: #34d399; }
-        .toast.error { border-color: #ef4444; background: #450a0a; color: #fca5a5; }
+  .brand{
+    font-family:'Bebas Neue',sans-serif;
+    letter-spacing:.04em;
+  }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateY(-10px); }
-        }
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:rgba(13,16,19,.9);backdrop-filter:blur(8px);
+    z-index:20;
+  }
+  .topbar .logo{font-size:26px;color:var(--text-hi);}
+  .topbar .logo span{color:var(--accent);}
+  .logout-btn{
+    background:none;border:1px solid var(--border);color:var(--text-mid);
+    padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+    transition:.15s;
+  }
+  .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .hidden{display:none !important;}
 
-        /* Auth (Giriş / Qeydiyyat) Səhifəsi */
-        #authContainer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0b111e; display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .auth-box { background: #131d31; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; }
-        .auth-title { color: #f8fafc; font-size: 22px; font-weight: 700; text-align: center; }
-        .auth-switch { text-align: center; font-size: 13px; color: #94a3b8; cursor: pointer; }
-        .auth-switch span { color: #10b981; font-weight: 600; }
+  /* ---------- AUTH SCREEN ---------- */
+  .auth-wrap{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(600px 400px at 15% 10%, rgba(255,93,46,.12), transparent 60%),
+      radial-gradient(500px 400px at 85% 90%, rgba(51,214,192,.10), transparent 60%),
+      var(--bg);
+  }
+  .access-card{
+    width:100%;max-width:420px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:36px 32px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  .access-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--teal));
+  }
+  .access-card .eyebrow{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--text-mid);font-weight:700;margin-bottom:6px;
+  }
+  .access-card h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:44px;line-height:1;margin:0 0 4px;letter-spacing:.03em;
+  }
+  .access-card h1 span{color:var(--accent);}
+  .access-card .sub{color:var(--text-mid);font-size:14px;margin-bottom:26px;}
 
-        /* Əsas Dashboard */
-        #appContainer { display: none; width: 100vw; height: 100vh; display: flex; }
-        .sidebar { width: 250px; height: 100vh; background: #0f172a; padding: 24px 16px; border-right: 1px solid #1e293b; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
-        .brand { display: flex; align-items: center; gap: 10px; color: #10b981; font-weight: 700; font-size: 18px; margin-bottom: 24px; }
-        .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .menu-item:hover { color: #f8fafc; background: #1e293b; }
-        .menu-item.active { background: #064e3b; color: #34d399; }
-        
-        .logout { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 14px 16px; font-size: 14px; font-weight: 600; border-radius: 12px; transition: all 0.2s; }
-        .logout:hover { background: #ef4444; color: #ffffff; }
+  .tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:22px;}
+  .tab-btn{
+    flex:1;padding:9px 0;border:none;background:transparent;color:var(--text-mid);
+    font-weight:700;font-size:13px;border-radius:7px;cursor:pointer;transition:.15s;
+  }
+  .tab-btn.active{background:var(--accent);color:#1a0a04;}
 
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .page-header { padding: 24px 32px 16px 32px; color: #f8fafc; font-size: 22px; font-weight: 700; }
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--text-mid);margin-bottom:6px;font-weight:600;}
+  .field input, .field select{
+    width:100%;padding:12px 13px;background:var(--surface-raised);
+    border:1px solid var(--border);border-radius:9px;color:var(--text-hi);
+    font-size:14px;font-family:inherit;transition:.15s;
+  }
+  .field input:focus, .field select:focus{border-color:var(--teal);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-        .content-area { flex: 1; padding: 0 32px 24px 32px; display: none; overflow-y: auto; }
-        .content-area.active { display: flex; gap: 20px; }
+  .btn{
+    width:100%;padding:13px;border:none;border-radius:9px;
+    background:var(--accent);color:#1a0a04;font-weight:800;font-size:14px;
+    cursor:pointer;letter-spacing:.01em;transition:.15s;margin-top:6px;
+  }
+  .btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.teal{background:var(--teal);}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-hi);}
+  .btn:disabled{opacity:.55;cursor:default;transform:none;}
 
-        /* Çat Ekranı */
-        #tab-chat.active { height: calc(100vh - 80px); }
-        .chat-card { flex: 1; background: #131d31; border: 1px solid #1e293b; border-radius: 16px; display: flex; flex-direction: column; padding: 20px; }
-        .chat-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 8px; }
+  .auth-msg{
+    margin-top:14px;font-size:13px;text-align:center;min-height:18px;color:var(--text-mid);
+  }
+  .auth-msg.error{color:var(--danger);}
+  .auth-msg.ok{color:var(--teal);}
 
-        .message { max-width: 80%; padding: 14px 18px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
-        .message.ai { background: #1a263d; border: 1px solid #283754; color: #e2e8f0; align-self: flex-start; }
-        .message.user { background: #064e3b; border: 1px solid #059669; color: #e2e8f0; align-self: flex-end; }
-        
-        .message p, .qida-result p, .workout-result p { margin-bottom: 8px; }
-        .message ul, .qida-result ul, .workout-result ul { margin-left: 18px; margin-bottom: 8px; }
-        .message h3, .qida-result h3, .workout-result h3 { color: #34d399; margin: 12px 0 6px 0; font-size: 16px; }
+  .plate-mark{
+    position:absolute;right:-38px;bottom:-38px;width:130px;height:130px;
+    border-radius:50%;border:14px solid var(--border);opacity:.35;
+  }
 
-        .input-bar { margin-top: 16px; display: flex; gap: 10px; align-items: center; }
-        .input-bar input[type="text"] { flex: 1; background: #0b111e; border: 1px solid #283754; border-radius: 10px; padding: 14px 18px; color: #f8fafc; font-size: 14px; outline: none; }
-        .file-upload-btn { background: #1a263d; border: 1px solid #283754; border-radius: 10px; padding: 12px 14px; color: #10b981; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .send-btn { background: #10b981; color: #064e3b; border: none; border-radius: 10px; padding: 14px 24px; font-weight: 700; font-size: 14px; cursor: pointer; }
+  /* ---------- DASHBOARD ---------- */
+  .dash{max-width:980px;margin:0 auto;padding:28px 20px 80px;}
+  .hero-row{
+    display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px;
+  }
+  .plate-stat{
+    flex:1;min-width:150px;
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:20px;display:flex;align-items:center;gap:16px;
+  }
+  .plate{
+    width:64px;height:64px;border-radius:50%;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(circle at 50% 50%, var(--surface-raised) 0 34%, transparent 35%),
+      conic-gradient(var(--accent), var(--teal));
+    position:relative;
+  }
+  .plate.teal-first{
+    background:
+      radial-gradient(circle at 50% 50%, var(--surface-raised) 0 34%, transparent 35%),
+      conic-gradient(var(--teal), var(--accent));
+  }
+  .plate span{
+    font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--text-hi);
+    position:relative;z-index:1;
+  }
+  .plate-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mid);font-weight:700;}
+  .plate-stat .value{font-family:'Bebas Neue',sans-serif;font-size:26px;margin-top:2px;letter-spacing:.02em;}
 
-        .history-card { width: 280px; background: #131d31; border: 1px solid #1e293b; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-        .new-chat-btn { background: #10b981; color: #064e3b; border: none; border-radius: 10px; padding: 12px; font-weight: 700; font-size: 14px; cursor: pointer; text-align: center; }
-        .history-title { font-size: 12px; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
-        .history-list { list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .history-item { padding: 12px; background: #0b111e; border: 1px solid #1e293b; border-radius: 10px; font-size: 13px; color: #94a3b8; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .history-item:hover, .history-item.active { border-color: #10b981; color: #f8fafc; background: #1a263d; }
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:24px;margin-bottom:20px;
+  }
+  .card h2{
+    font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;
+    margin:0 0 4px;display:flex;align-items:center;gap:10px;
+  }
+  .card h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .card .desc{color:var(--text-mid);font-size:13px;margin:0 0 18px;}
 
-        /* Kartlar və Formalar */
-        .card { background: #131d31; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; color: #f8fafc; width: 100%; max-width: 850px; display: flex; flex-direction: column; gap: 16px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group.full { grid-column: span 2; }
-        .form-group label { font-size: 14px; color: #94a3b8; }
-        .form-group input, .form-group select { background: #0b111e; border: 1px solid #283754; border-radius: 10px; padding: 12px 16px; color: #f8fafc; font-size: 14px; outline: none; }
-        .form-group input:focus { border-color: #10b981; }
-        .save-btn { background: #10b981; color: #064e3b; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .plan-output{
+    background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:16px 18px;margin-top:14px;font-size:14px;line-height:1.7;
+    white-space:pre-wrap;color:var(--text-hi);max-height:420px;overflow-y:auto;
+  }
+  .plan-output:empty{display:none;}
+  .plan-output.loading{color:var(--text-mid);font-style:italic;}
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; width: 100%; }
-        .stat-box { background: #0b111e; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; text-align: center; }
-        .stat-value { font-size: 28px; font-weight: 700; color: #34d399; margin-top: 8px; }
+  .kcal-pill{
+    display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+    background:var(--teal-dim);color:var(--teal);border-radius:20px;
+    padding:6px 14px;font-size:12px;font-weight:700;
+  }
 
-        .qida-container, .workout-container { display: flex; gap: 20px; width: 100%; }
-        .qida-result, .workout-result { flex: 1; background: #0b111e; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; color: #e2e8f0; font-size: 14px; line-height: 1.6; min-height: 200px; max-height: 450px; overflow-y: auto; }
-    </style>
+  /* chat */
+  .chat-shell{display:flex;gap:16px;}
+  .chat-list{width:150px;flex:none;display:flex;flex-direction:column;gap:6px;}
+  .chat-item{
+    background:var(--surface-raised);border:1px solid var(--border);border-radius:8px;
+    padding:9px 10px;font-size:12px;color:var(--text-mid);cursor:pointer;text-align:left;
+  }
+  .chat-item.active{border-color:var(--teal);color:var(--teal);}
+  .chat-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .chat-log{
+    background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:14px;height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  }
+  .msg{max-width:82%;padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.5;}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#1a0a04;font-weight:600;}
+  .msg.api{align-self:flex-start;background:var(--surface-raised);border:1px solid var(--border);white-space:pre-wrap;}
+  .chat-input-row{display:flex;gap:8px;margin-top:10px;}
+  .chat-input-row input[type=text]{flex:1;}
+  .chat-input-row .icon-btn{
+    background:var(--surface-raised);border:1px solid var(--border);border-radius:9px;
+    width:44px;flex:none;cursor:pointer;color:var(--text-mid);font-size:16px;
+  }
+  .chat-input-row .icon-btn:hover{color:var(--teal);border-color:var(--teal);}
+  #img-preview-name{font-size:11px;color:var(--teal);margin-top:6px;}
+
+  @media (max-width:640px){
+    .chat-shell{flex-direction:column;}
+    .chat-list{width:100%;flex-direction:row;overflow-x:auto;}
+    .row2{grid-template-columns:1fr;}
+    .access-card{padding:28px 22px 24px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
 </head>
 <body>
 
-    <!-- Sağ Yuxarı Künc Bildirişləri Üçün Qutu -->
-    <div id="toastContainer"></div>
+  <!-- ================= AUTH SCREEN ================= -->
+  <div id="auth-screen" class="auth-wrap">
+    <div class="access-card">
+      <div class="plate-mark"></div>
+      <div class="eyebrow">Fitness · AI Coach</div>
+      <h1>FitMentor<span>AI</span></h1>
+      <p class="sub">Fərdi məşq, qidalanma və məsləhət — bir kartda.</p>
 
-    <!-- Giriş / Qeydiyyat Ekranı -->
-    <div id="authContainer">
-        <div class="auth-box">
-            <div class="auth-title" id="authTitle">FitMentor AI - Giriş</div>
-            <form id="authForm" onsubmit="handleAuth(event)">
-                <div class="form-group" id="regFields" style="display: none; gap: 12px;">
-                    <div>
-                        <label>Ad:</label>
-                        <input type="text" id="auth_first_name">
-                    </div>
-                    <div>
-                        <label>Soyad:</label>
-                        <input type="text" id="auth_last_name">
-                    </div>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label>E-poçt (Email):</label>
-                    <input type="email" id="auth_email" required>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label>Şifrə:</label>
-                    <input type="password" id="auth_password" required>
-                </div>
-                <button type="submit" class="save-btn" id="authBtn" style="margin-top: 20px; width: 100%;">Daxil Ol</button>
-            </form>
-            <div class="auth-switch" id="authSwitchText" onclick="toggleAuthMode()">
-                Hesabınız yoxdur? <span>Qeydiyyatdan keçin</span>
-            </div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="login-form">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="ad@nümunə.com">
         </div>
+        <div class="field">
+          <label>Şifrə</label>
+          <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+        <button class="btn" onclick="login()" id="login-btn">Daxil ol</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="register-form" class="hidden">
+        <div class="row2">
+          <div class="field">
+            <label>Ad</label>
+            <input type="text" id="reg-first">
+          </div>
+          <div class="field">
+            <label>Soyad</label>
+            <input type="text" id="reg-last">
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="ad@nümunə.com">
+        </div>
+        <div class="field">
+          <label>Şifrə</label>
+          <input type="password" id="reg-password" placeholder="minimum 6 simvol">
+        </div>
+        <button class="btn teal" onclick="registerUser()" id="reg-btn">Qeydiyyatdan keç</button>
+      </div>
+
+      <p class="auth-msg" id="auth-msg"></p>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div id="dashboard" class="hidden">
+    <div class="topbar">
+      <div class="logo brand">FitMentor<span>AI</span></div>
+      <button class="logout-btn" onclick="logout()">Çıxış</button>
     </div>
 
-    <!-- Əsas Panel -->
-    <div id="appContainer" style="display: none;">
-        <div class="sidebar">
-            <div>
-                <div class="brand">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    FitMentor AI
-                </div>
-                <ul class="menu-list">
-                    <li class="menu-item" onclick="switchTab('profile', this)">👤 Profil Məlumatları</li>
-                    <li class="menu-item" onclick="switchTab('overview', this)">📊 Ümumi İcmal</li>
-                    <li class="menu-item" onclick="switchTab('meal', this)">🍽️ AI Qida Analizi</li>
-                    <li class="menu-item" onclick="switchTab('meal-plan', this)">🥗 Gündəlik Qida Proqramı</li>
-                    <li class="menu-item" onclick="switchTab('workout', this)">🏋️ Məşq Proqramı</li>
-                    <li class="menu-item active" onclick="switchTab('chat', this)">💬 FitMentor AI Çat</li>
-                </ul>
-            </div>
-            <div class="logout" onclick="handleLogout()">🚪 Çıxış Et</div>
+    <div class="dash">
+      <div class="hero-row">
+        <div class="plate-stat">
+          <div class="plate"><span id="hero-bmi">--</span></div>
+          <div><div class="label">BMI</div><div class="value" id="hero-bmi-cat">—</div></div>
         </div>
-
-        <div class="main-wrapper">
-            <div class="page-header" id="pageTitle">FitMentor AI Məsləhətçi</div>
-
-            <!-- Çat -->
-            <div id="tab-chat" class="content-area active">
-                <div class="chat-card">
-                    <div class="chat-box" id="chatBox"></div>
-                    <div class="input-bar">
-                        <label class="file-upload-btn" title="Şəkil əlavə et">
-                            📷 <input type="file" id="imageInput" accept="image/*" style="display:none;">
-                        </label>
-                        <input type="text" id="userInput" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
-                        <button class="send-btn" onclick="sendMessage()">Göndər ➔</button>
-                    </div>
-                </div>
-                <div class="history-card">
-                    <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Söhbət</button>
-                    <div class="history-title">KÖHNƏ ÇATLAR</div>
-                    <ul class="history-list" id="historyList"></ul>
-                </div>
-            </div>
-
-            <!-- Profil -->
-            <div id="tab-profile" class="content-area">
-                <div class="card">
-                    <h3>Şəxsi Məlumatlar</h3>
-                    <form id="profileForm" onsubmit="updateProfile(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Ad:</label>
-                                <input type="text" id="p_first_name" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Soyad:</label>
-                                <input type="text" id="p_last_name" required>
-                            </div>
-                            <div class="form-group full">
-                                <label>E-poçt (Email):</label>
-                                <input type="email" id="p_email" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Yaş:</label>
-                                <input type="number" id="p_age" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Cins:</label>
-                                <select id="p_gender">
-                                    <option value="male">Kişi</option>
-                                    <option value="female">Qadın</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Boy (sm):</label>
-                                <input type="number" step="0.1" id="p_height" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Çəki (kq):</label>
-                                <input type="number" step="0.1" id="p_weight" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="save-btn" style="margin-top: 12px; width: 100%;">Məlumatları Yenilə</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- İcmal -->
-            <div id="tab-overview" class="content-area">
-                <div class="card">
-                    <h3>Gündəlik Göstəriciləriniz</h3>
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <div style="font-size: 14px;">Bədən Kütlə İndeksi (BMI)</div>
-                            <div class="stat-value" id="bmiVal">--</div>
-                        </div>
-                        <div class="stat-box">
-                            <div style="font-size: 14px;">Gündəlik Kalori Tələbatı</div>
-                            <div class="stat-value" id="calVal">-- kcal</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Qida Analizi -->
-            <div id="tab-meal" class="content-area">
-                <div class="card" style="max-width: 1000px;">
-                    <h3>AI Qida və Kalori Analizi</h3>
-                    <p style="font-size: 14px; color: #94a3b8;">Yeməyinizin şəklini yükləyin və ya nə yediyinizi mətn olaraq yazın.</p>
-                    <div class="qida-container">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                            <div class="form-group">
-                                <label>Yemək Şəkli:</label>
-                                <input type="file" id="qidaImage" accept="image/*">
-                            </div>
-                            <div class="form-group">
-                                <label>Və ya Təsvir Edin:</label>
-                                <input type="text" id="qidaText" placeholder="Məsələn: 200q qızardılmış toyuq sine əti və düyü">
-                            </div>
-                            <button class="save-btn" onclick="analyzeMeal()">Analiz Et 🔍</button>
-                        </div>
-                        <div class="qida-result" id="qidaResult">Analiz nəticəsi burada görünəcək...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gündəlik Qida Proqramı (YENİ ƏLAVƏ OLUNAN BÖLMƏ) -->
-            <div id="tab-meal-plan" class="content-area">
-                <div class="card" style="max-width: 1000px;">
-                    <h3>Fərdiləşdirilmiş Gündəlik Qida Proqramı</h3>
-                    <p style="font-size: 14px; color: #94a3b8;">Kalori ehtiyacınıza və məqsədinizə uyğun olaraq AI tərəfindən hazırlanan menyu.</p>
-                    <div class="workout-container">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                            <div class="form-group">
-                                <label>Əsas Məqsəd:</label>
-                                <select id="mealGoal">
-                                    <option value="Çəki saxlamaq">Çəki saxlamaq</option>
-                                    <option value="Arıqlamaq / Çəki atmaq">Arıqlamaq / Çəki atmaq</option>
-                                    <option value="Əzələ kütləsi qazanmaq">Əzələ kütləsi qazanmaq</option>
-                                </select>
-                            </div>
-                            <button class="save-btn" onclick="generateMealPlan()">Proqramı Yarat 🍏</button>
-                        </div>
-                        <div class="workout-result" id="mealPlanResult">Qida proqramınız burada görünəcək...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Məşq Proqramı -->
-            <div id="tab-workout" class="content-area">
-                <div class="card" style="max-width: 1000px;">
-                    <h3>Fərdiləşdirilmiş Məşq Proqramı</h3>
-                    <p style="font-size: 14px; color: #94a3b8;">Harada və həftədə neçə gün məşq edəcəyinizi seçin, AI sizin üçün xüsusi proqram hazırlasın.</p>
-                    <div class="workout-container">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                            <div class="form-group">
-                                <label>Məşq Yeri:</label>
-                                <select id="workoutLocation">
-                                    <option value="Evdə">Evdə</option>
-                                    <option value="İdman Zalında (Gym)">İdman Zalında (Gym)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Həftəlik Tezlik:</label>
-                                <select id="workoutDays">
-                                    <option value="3">Həftədə 3 gün</option>
-                                    <option value="4">Həftədə 4 gün</option>
-                                    <option value="5">Həftədə 5 gün</option>
-                                    <option value="6">Həftədə 6 gün</option>
-                                </select>
-                            </div>
-                            <button class="save-btn" onclick="generateWorkoutPlan()">Proqramı Yarat 🚀</button>
-                        </div>
-                        <div class="workout-result" id="workoutResult">Məşq proqramınız burada görünəcək...</div>
-                    </div>
-                </div>
-            </div>
-
+        <div class="plate-stat">
+          <div class="plate teal-first"><span id="hero-kcal">--</span></div>
+          <div><div class="label">Gündəlik</div><div class="value">kalori</div></div>
         </div>
+        <div class="plate-stat">
+          <div class="plate"><span id="hero-weight">--</span></div>
+          <div><div class="label">Çəki</div><div class="value">kq</div></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="card">
+        <h2><span class="dot"></span>Profil</h2>
+        <p class="desc">Məlumatlarını yenilə ki, planlar dəqiq hesablansın.</p>
+        <div class="row2">
+          <div class="field"><label>Ad</label><input type="text" id="p-first"></div>
+          <div class="field"><label>Soyad</label><input type="text" id="p-last"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Yaş</label><input type="number" id="p-age"></div>
+          <div class="field">
+            <label>Cins</label>
+            <select id="p-gender">
+              <option value="male">Kişi</option>
+              <option value="female">Qadın</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Boy (sm)</label><input type="number" id="p-height"></div>
+          <div class="field"><label>Çəki (kq)</label><input type="number" id="p-weight"></div>
+        </div>
+        <button class="btn ghost" onclick="updateProfile()">Profili Yadda Saxla</button>
+        <p class="auth-msg" id="profile-msg"></p>
+      </div>
+
+      <!-- WORKOUT -->
+      <div class="card">
+        <h2><span class="dot" style="background:var(--teal)"></span>Məşq Proqramı</h2>
+        <p class="desc">Gemini profilinə uyğun həftəlik proqram qursun.</p>
+        <div class="row2">
+          <div class="field">
+            <label>Məşq yeri</label>
+            <select id="w-location">
+              <option value="Gym">Gym</option>
+              <option value="Ev">Ev</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Həftədə neçə gün</label>
+            <input type="number" id="w-days" value="4" min="1" max="7">
+          </div>
+        </div>
+        <button class="btn teal" onclick="generateWorkout()" id="workout-btn">Proqram Yarat</button>
+        <div class="plan-output" id="workout-output"></div>
+      </div>
+
+      <!-- MEAL PLAN -->
+      <div class="card">
+        <h2><span class="dot"></span>Qida Proqramı</h2>
+        <p class="desc">Məqsədinə uyğun gündəlik menyu.</p>
+        <div class="field">
+          <label>Məqsəd</label>
+          <select id="m-goal">
+            <option value="Arıqlama">Arıqlama</option>
+            <option value="Əzələ qazanma">Əzələ qazanma</option>
+            <option value="Çəki saxlamaq">Çəki saxlamaq</option>
+          </select>
+        </div>
+        <button class="btn" onclick="generateMealPlan()" id="meal-btn">Menyu Yarat</button>
+        <div class="plan-output" id="meal-output"></div>
+      </div>
+
+      <!-- AI CHAT -->
+      <div class="card">
+        <h2><span class="dot" style="background:var(--teal)"></span>AI Koç</h2>
+        <p class="desc">Sual ver, ya da şəkil göndər (yemək, bədən forması və s.).</p>
+        <div class="chat-shell">
+          <div class="chat-list" id="chat-list"></div>
+          <div class="chat-main">
+            <div class="chat-log" id="chat-log"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Sualını yaz...">
+              <input type="file" id="chat-image" accept="image/*" class="hidden" onchange="onImagePicked()">
+              <button class="icon-btn" onclick="document.getElementById('chat-image').click()" title="Şəkil əlavə et">📷</button>
+              <button class="icon-btn" onclick="sendChat()" title="Göndər">➤</button>
+            </div>
+            <div id="img-preview-name"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script>
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icon = type === 'success' ? '✅' : '⚠️';
-            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
+<script>
+const API = "";
+let token = localStorage.getItem("fm_token") || null;
+let activeChatId = null;
 
-        let isRegisterMode = false;
-        let currentChatId = null;
+function showAuthMsg(text, type){
+  const el = document.getElementById("auth-msg");
+  el.textContent = text || "";
+  el.className = "auth-msg" + (type ? " " + type : "");
+}
 
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            const title = document.getElementById('authTitle');
-            const btn = document.getElementById('authBtn');
-            const switchText = document.getElementById('authSwitchText');
-            const regFields = document.getElementById('regFields');
+function switchTab(which){
+  document.getElementById("tab-login").classList.toggle("active", which==="login");
+  document.getElementById("tab-register").classList.toggle("active", which==="register");
+  document.getElementById("login-form").classList.toggle("hidden", which!=="login");
+  document.getElementById("register-form").classList.toggle("hidden", which!=="register");
+  showAuthMsg("");
+}
 
-            if (isRegisterMode) {
-                title.innerText = 'FitMentor AI - Qeydiyyat';
-                btn.innerText = 'Qeydiyyatdan Keç';
-                switchText.innerHTML = 'Artıq hesabınız var? <span>Daxil olun</span>';
-                regFields.style.display = 'grid';
-            } else {
-                title.innerText = 'FitMentor AI - Giriş';
-                btn.innerText = 'Daxil Ol';
-                switchText.innerHTML = 'Hesabınız yoxdur? <span>Qeydiyyatdan keçin</span>';
-                regFields.style.display = 'none';
-            }
-        }
+async function apiForm(path, fields, method="POST"){
+  const fd = new FormData();
+  Object.entries(fields).forEach(([k,v]) => { if(v !== undefined && v !== null) fd.append(k,v); });
+  const headers = {};
+  if(token) headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(API + path, { method, headers, body: fd });
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+  if(res.status === 401){ logout(); }
+  return { ok: res.ok, status: res.status, data };
+}
 
-        async function handleAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('auth_email').value;
-            const password = document.getElementById('auth_password').value;
-            
-            const formData = new FormData();
-            formData.append('email', email);
-            formData.append('password', password);
+async function apiGet(path){
+  const headers = {};
+  if(token) headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(API + path, { headers });
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+  if(res.status === 401){ logout(); }
+  return { ok: res.ok, status: res.status, data };
+}
 
-            let url = '/auth/login';
-            if (isRegisterMode) {
-                url = '/auth/register';
-                formData.append('first_name', document.getElementById('auth_first_name').value);
-                formData.append('last_name', document.getElementById('auth_last_name').value);
-            }
+function errText(data){
+  return data.detail ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : "Xəta baş verdi.";
+}
 
-            try {
-                const res = await fetch(url, { method: 'POST', body: formData });
-                const data = await res.json();
-                
-                if (res.ok) {
-                    showToast(data.message, 'success');
-                    document.getElementById('authContainer').style.display = 'none';
-                    document.getElementById('appContainer').style.display = 'flex';
-                    initApp();
-                } else {
-                    showToast(data.detail || 'Xəta baş verdi', 'error');
-                }
-            } catch (err) {
-                showToast('Serverlə əlaqə qurulmadı.', 'error');
-            }
-        }
+async function registerUser(){
+  const btn = document.getElementById("reg-btn");
+  const first_name = document.getElementById("reg-first").value.trim();
+  const last_name = document.getElementById("reg-last").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value;
+  if(!first_name || !last_name || !email || !password){ showAuthMsg("Bütün sahələri doldur.", "error"); return; }
 
-        function handleLogout() {
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('authContainer').style.display = 'flex';
-            showToast('Hesabdan çıxış edildi.', 'success');
-        }
+  btn.disabled = true;
+  const { ok, data } = await apiForm("/auth/register", { email, password, first_name, last_name });
+  btn.disabled = false;
 
-        function switchTab(tabName, el) {
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
+  if(ok){
+    showAuthMsg("Qeydiyyat tamamlandı, indi daxil ol!", "ok");
+    switchTab("login");
+    document.getElementById("login-email").value = email;
+  } else {
+    showAuthMsg(errText(data), "error");
+  }
+}
 
-            if (el) el.classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
+async function login(){
+  const btn = document.getElementById("login-btn");
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
+  if(!email || !password){ showAuthMsg("Email və şifrəni daxil et.", "error"); return; }
 
-            const titles = {
-                'profile': 'Profil Məlumatları',
-                'overview': 'Ümumi İcmal',
-                'meal': 'AI Qida Analizi',
-                'meal-plan': 'Gündəlik Qida Proqramı',
-                'workout': 'Məşq Proqramı',
-                'chat': 'FitMentor AI Məsləhətçi'
-            };
-            document.getElementById('pageTitle').innerText = titles[tabName];
+  btn.disabled = true;
+  const { ok, data } = await apiForm("/auth/login", { email, password });
+  btn.disabled = false;
 
-            if (tabName === 'profile' || tabName === 'overview') {
-                fetchProfileData();
-            }
-        }
+  if(ok && data.access_token){
+    token = data.access_token;
+    localStorage.setItem("fm_token", token);
+    enterDashboard();
+  } else {
+    showAuthMsg(errText(data), "error");
+  }
+}
 
-        async function fetchProfileData() {
-            const res = await fetch('/profile');
-            const data = await res.json();
-            
-            document.getElementById('p_first_name').value = data.profile.first_name || '';
-            document.getElementById('p_last_name').value = data.profile.last_name || '';
-            document.getElementById('p_email').value = data.profile.email || '';
-            document.getElementById('p_age').value = data.profile.age;
-            document.getElementById('p_gender').value = data.profile.gender;
-            document.getElementById('p_height').value = data.profile.height_cm;
-            document.getElementById('p_weight').value = data.profile.weight_kg;
+function logout(){
+  token = null;
+  localStorage.removeItem("fm_token");
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("auth-screen").classList.remove("hidden");
+  showAuthMsg("");
+}
 
-            document.getElementById('bmiVal').innerText = data.bmi;
-            document.getElementById('calVal').innerText = `${data.daily_calories} kcal`;
-        }
+async function enterDashboard(){
+  document.getElementById("auth-screen").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  await loadProfile();
+  await loadChats();
+}
 
-        async function updateProfile(e) {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('first_name', document.getElementById('p_first_name').value);
-            formData.append('last_name', document.getElementById('p_last_name').value);
-            formData.append('email', document.getElementById('p_email').value);
-            formData.append('age', document.getElementById('p_age').value);
-            formData.append('gender', document.getElementById('p_gender').value);
-            formData.append('height_cm', document.getElementById('p_height').value);
-            formData.append('weight_kg', document.getElementById('p_weight').value);
+async function loadProfile(){
+  const { ok, data } = await apiGet("/profile");
+  if(!ok) return;
+  const p = data.profile;
+  document.getElementById("hero-bmi").textContent = data.bmi;
+  document.getElementById("hero-bmi-cat").textContent = bmiCategory(data.bmi);
+  document.getElementById("hero-kcal").textContent = data.daily_calories;
+  document.getElementById("hero-weight").textContent = p.weight_kg;
 
-            const res = await fetch('/profile/update', { method: 'POST', body: formData });
-            if (res.ok) {
-                showToast('Profil məlumatları uğurla yeniləndi!', 'success');
-                fetchProfileData();
-            } else {
-                showToast('Yenilənmə zamanı xəta baş verdi.', 'error');
-            }
-        }
+  document.getElementById("p-first").value = p.first_name || "";
+  document.getElementById("p-last").value = p.last_name || "";
+  document.getElementById("p-age").value = p.age;
+  document.getElementById("p-gender").value = p.gender;
+  document.getElementById("p-height").value = p.height_cm;
+  document.getElementById("p-weight").value = p.weight_kg;
+}
 
-        async function analyzeMeal() {
-            const fileInput = document.getElementById('qidaImage');
-            const textInput = document.getElementById('qidaText');
-            const resultBox = document.getElementById('qidaResult');
+function bmiCategory(bmi){
+  if(bmi < 18.5) return "Arıq";
+  if(bmi < 25) return "Normal";
+  if(bmi < 30) return "Artıq çəki";
+  return "Piylənmə";
+}
 
-            if (!fileInput.files[0] && !textInput.value.trim()) {
-                showToast('Zəhmət olmasa şəkil yükləyin və ya mətn yazın.', 'error');
-                return;
-            }
+async function updateProfile(){
+  const msg = document.getElementById("profile-msg");
+  const fields = {
+    first_name: document.getElementById("p-first").value,
+    last_name: document.getElementById("p-last").value,
+    age: document.getElementById("p-age").value,
+    gender: document.getElementById("p-gender").value,
+    height_cm: document.getElementById("p-height").value,
+    weight_kg: document.getElementById("p-weight").value,
+  };
+  const { ok, data } = await apiForm("/profile/update", fields);
+  msg.textContent = ok ? data.message : errText(data);
+  msg.className = "auth-msg " + (ok ? "ok" : "error");
+  if(ok) loadProfile();
+}
 
-            resultBox.innerText = 'Analiz edilir, zəhmət olmasa gözləyin...';
+async function generateWorkout(){
+  const btn = document.getElementById("workout-btn");
+  const out = document.getElementById("workout-output");
+  btn.disabled = true;
+  out.className = "plan-output loading";
+  out.textContent = "Proqram hazırlanır...";
 
-            const formData = new FormData();
-            if (textInput.value.trim()) {
-                formData.append('message', `Yemək analizi: ${textInput.value.trim()}`);
-            } else {
-                formData.append('message', 'Bu şəkildəki yeməyi analiz et.');
-            }
-            if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
+  const { ok, data } = await apiForm("/generate-workout", {
+    location: document.getElementById("w-location").value,
+    days_per_week: document.getElementById("w-days").value,
+  });
 
-            try {
-                const res = await fetch('/ai-chat', { method: 'POST', body: formData });
-                const data = await res.json();
-                resultBox.innerHTML = marked.parse(data.reply);
-            } catch (err) {
-                resultBox.innerText = 'Analiz zamanı xəta baş verdi.';
-            }
-        }
+  btn.disabled = false;
+  out.className = "plan-output";
+  out.textContent = ok ? data.workout_plan : errText(data);
+}
 
-        async function generateMealPlan() {
-            const goal = document.getElementById('mealGoal').value;
-            const resultBox = document.getElementById('mealPlanResult');
+async function generateMealPlan(){
+  const btn = document.getElementById("meal-btn");
+  const out = document.getElementById("meal-output");
+  btn.disabled = true;
+  out.className = "plan-output loading";
+  out.textContent = "Menyu hazırlanır...";
 
-            resultBox.innerText = 'Qida proqramınız hazırlanır, zəhmət olmasa gözləyin...';
+  const { ok, data } = await apiForm("/generate-meal-plan", {
+    goal: document.getElementById("m-goal").value,
+  });
 
-            const formData = new FormData();
-            formData.append('goal', goal);
+  btn.disabled = false;
+  if(ok){
+    out.className = "plan-output";
+    out.textContent = data.meal_plan;
+    out.insertAdjacentHTML("afterend", `<div class="kcal-pill">🎯 Hədəf: ${data.target_calories} kcal</div>`);
+  } else {
+    out.className = "plan-output";
+    out.textContent = errText(data);
+  }
+}
 
-            try {
-                const res = await fetch('/generate-meal-plan', { method: 'POST', body: formData });
-                const data = await res.json();
-                resultBox.innerHTML = marked.parse(data.meal_plan);
-            } catch (err) {
-                resultBox.innerText = 'Qida proqramı yaradılarkən xəta baş verdi.';
-            }
-        }
+/* ---------------- CHAT ---------------- */
+async function loadChats(){
+  const { ok, data } = await apiGet("/chats");
+  const list = document.getElementById("chat-list");
+  list.innerHTML = "";
+  const newBtn = document.createElement("button");
+  newBtn.className = "chat-item";
+  newBtn.textContent = "+ Yeni söhbət";
+  newBtn.onclick = () => { activeChatId = null; renderMessages([]); highlightChat(null); };
+  list.appendChild(newBtn);
 
-        async function generateWorkoutPlan() {
-            const location = document.getElementById('workoutLocation').value;
-            const days = document.getElementById('workoutDays').value;
-            const resultBox = document.getElementById('workoutResult');
+  if(ok && Array.isArray(data)){
+    data.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "chat-item";
+      b.textContent = c.title;
+      b.onclick = () => selectChat(c.id);
+      b.dataset.id = c.id;
+      list.appendChild(b);
+    });
+  }
+  if(!activeChatId) renderMessages([]);
+}
 
-            resultBox.innerText = 'Məşq proqramı hazırlanır, zəhmət olmasa gözləyin...';
+function highlightChat(id){
+  document.querySelectorAll(".chat-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.id === id);
+  });
+}
 
-            const formData = new FormData();
-            formData.append('location', location);
-            formData.append('days_per_week', days);
+async function selectChat(id){
+  activeChatId = id;
+  highlightChat(id);
+  const { ok, data } = await apiGet("/chats/" + encodeURIComponent(id));
+  renderMessages(ok ? data.messages : []);
+}
 
-            try {
-                const res = await fetch('/generate-workout', { method: 'POST', body: formData });
-                const data = await res.json();
-                resultBox.innerHTML = marked.parse(data.workout_plan);
-            } catch (err) {
-                resultBox.innerText = 'Məşq proqramı yaradılarkən xəta baş verdi.';
-            }
-        }
+function renderMessages(messages){
+  const log = document.getElementById("chat-log");
+  log.innerHTML = "";
+  messages.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "msg " + (m.sender === "user" ? "user" : "api");
+    div.textContent = m.text;
+    log.appendChild(div);
+  });
+  log.scrollTop = log.scrollHeight;
+}
 
-        async function initApp() {
-            await loadChats();
-            startNewChat();
-            fetchProfileData();
-        }
+function onImagePicked(){
+  const f = document.getElementById("chat-image").files[0];
+  document.getElementById("img-preview-name").textContent = f ? "📎 " + f.name : "";
+}
 
-        async function loadChats() {
-            const res = await fetch('/chats');
-            const chats = await res.json();
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            
-            chats.forEach(chat => {
-                const li = document.createElement('li');
-                li.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
-                li.innerText = chat.title;
-                li.onclick = () => selectChat(chat.id);
-                list.appendChild(li);
-            });
-        }
+async function sendChat(){
+  const input = document.getElementById("chat-input");
+  const imageInput = document.getElementById("chat-image");
+  const message = input.value.trim();
+  const file = imageInput.files[0];
+  if(!message && !file) return;
 
-        function startNewChat() {
-            currentChatId = null;
-            const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML = `
-                <div class="message ai">
-                    Salam! Mən sizin şəxsi fitnes və qidalanma məsləhətçinizəm. Necəsiniz? Bu gün sizə necə kömək edə bilərəm?
-                </div>
-            `;
-            loadChats();
-        }
+  const log = document.getElementById("chat-log");
+  const userBubble = document.createElement("div");
+  userBubble.className = "msg user";
+  userBubble.textContent = message || "📷 Şəkil göndərildi";
+  log.appendChild(userBubble);
+  log.scrollTop = log.scrollHeight;
 
-        async function selectChat(chatId) {
-            currentChatId = chatId;
-            const res = await fetch(`/chats/${chatId}`);
-            const data = await res.json();
-            
-            const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML = '';
+  const thinking = document.createElement("div");
+  thinking.className = "msg api";
+  thinking.textContent = "Düşünür...";
+  log.appendChild(thinking);
+  log.scrollTop = log.scrollHeight;
 
-            data.messages.forEach(msg => {
-                appendMessage(msg.text, msg.sender, msg.image);
-            });
-            await loadChats();
-        }
+  input.value = "";
+  const fields = {};
+  if(activeChatId) fields.chat_id = activeChatId;
+  if(message) fields.message = message;
 
-        function appendMessage(text, sender, hasImage = false) {
-            const chatBox = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.className = `message ${sender}`;
-            
-            let htmlContent = sender === 'ai' ? marked.parse(text) : text;
-            if (hasImage) {
-                htmlContent = "📷 <i>[Şəkil əlavə olundu]</i><br>" + htmlContent;
-            }
-            div.innerHTML = htmlContent;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+  const fd = new FormData();
+  Object.entries(fields).forEach(([k,v]) => fd.append(k,v));
+  if(file) fd.append("image", file);
 
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const imageInput = document.getElementById('imageInput');
-            const text = input.value.trim();
-            const file = imageInput.files[0];
+  const headers = {};
+  if(token) headers["Authorization"] = "Bearer " + token;
 
-            if (!text && !file) return;
+  const res = await fetch("/ai-chat", { method: "POST", headers, body: fd });
+  const data = await res.json().catch(() => ({}));
 
-            appendMessage(text || "Şəkil göndərildi", 'user', !!file);
-            
-            const formData = new FormData();
-            if (currentChatId) formData.append('chat_id', currentChatId);
-            if (text) formData.append('message', text);
-            if (file) formData.append('image', file);
+  thinking.remove();
+  imageInput.value = "";
+  document.getElementById("img-preview-name").textContent = "";
 
-            input.value = '';
-            imageInput.value = '';
+  if(res.ok){
+    const apiBubble = document.createElement("div");
+    apiBubble.className = "msg api";
+    apiBubble.textContent = data.reply;
+    log.appendChild(apiBubble);
+    log.scrollTop = log.scrollHeight;
+    if(!activeChatId){ activeChatId = data.chat_id; loadChats(); }
+  } else {
+    const errBubble = document.createElement("div");
+    errBubble.className = "msg api";
+    errBubble.textContent = errText(data);
+    log.appendChild(errBubble);
+  }
+}
 
-            try {
-                const res = await fetch('/ai-chat', { method: 'POST', body: formData });
-                const data = await res.json();
-                currentChatId = data.chat_id;
-                appendMessage(data.reply, 'ai');
-                await loadChats();
-            } catch (err) {
-                appendMessage("Xəta baş verdi.", 'ai');
-            }
-        }
-    </script>
+document.getElementById("chat-input").addEventListener("keydown", e => {
+  if(e.key === "Enter") sendChat();
+});
+
+/* ---------------- INIT ---------------- */
+if(token){ enterDashboard(); }
+</script>
 </body>
 </html>
