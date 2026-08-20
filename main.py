@@ -263,7 +263,7 @@ async def ai_chat(
 
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction="Sən peşəkar fitnes və qidalanma məsləhətçisisən. İstifadəçi hansı dildə yazırsa yazsın, həmişə səlis və aydın Azərbaycan dilində cavab ver."
@@ -300,7 +300,7 @@ async def generate_workout(
 
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction="Sən peşəkar fitnes məşqçisisən. Həmişə səlis və aydın Azərbaycan dilində cavab ver."
@@ -338,7 +338,7 @@ async def generate_meal_plan(
 
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction="Sən peşəkar diyetoloqsan. Həmişə səlis və aydın Azərbaycan dilində cavab ver."
