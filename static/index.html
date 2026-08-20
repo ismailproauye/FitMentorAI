@@ -6,6 +6,8 @@
 <title>FitMentor AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Marked.js Markdown Parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
   :root{
     --bg:#0D1013;
@@ -172,10 +174,16 @@
   .plan-output{
     background:var(--bg);border:1px solid var(--border);border-radius:10px;
     padding:16px 18px;margin-top:14px;font-size:14px;line-height:1.7;
-    white-space:pre-wrap;color:var(--text-hi);max-height:420px;overflow-y:auto;
+    color:var(--text-hi);max-height:420px;overflow-y:auto;
   }
   .plan-output:empty{display:none;}
   .plan-output.loading{color:var(--text-mid);font-style:italic;}
+
+  /* Markdown daxili elementlərin tənzimlənməsi */
+  .plan-output p, .msg p { margin: 0 0 10px 0; }
+  .plan-output ul, .msg ul { margin: 0 0 10px 20px; padding: 0; }
+  .plan-output ol, .msg ol { margin: 0 0 10px 20px; padding: 0; }
+  .plan-output h1, .plan-output h2, .plan-output h3, .plan-output h4 { margin: 10px 0 6px 0; color: var(--teal); }
 
   .kcal-pill{
     display:inline-flex;align-items:center;gap:6px;margin-top:12px;
@@ -198,7 +206,7 @@
   }
   .msg{max-width:82%;padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.5;}
   .msg.user{align-self:flex-end;background:var(--accent);color:#1a0a04;font-weight:600;}
-  .msg.api{align-self:flex-start;background:var(--surface-raised);border:1px solid var(--border);white-space:pre-wrap;}
+  .msg.api{align-self:flex-start;background:var(--surface-raised);border:1px solid var(--border);}
   .chat-input-row{display:flex;gap:8px;margin-top:10px;}
   .chat-input-row input[type=text]{flex:1;}
   .chat-input-row .icon-btn{
@@ -424,7 +432,7 @@ async function apiGet(path){
   return { ok: res.ok, status: res.status, data };
 }
 
-function errText(data){
+fn errText(data){
   return data.detail ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : "Xəta baş verdi.";
 }
 
@@ -537,7 +545,7 @@ async function generateWorkout(){
 
   btn.disabled = false;
   out.className = "plan-output";
-  out.textContent = ok ? data.workout_plan : errText(data);
+  out.innerHTML = ok ? marked.parse(data.workout_plan) : errText(data);
 }
 
 async function generateMealPlan(){
@@ -554,7 +562,7 @@ async function generateMealPlan(){
   btn.disabled = false;
   if(ok){
     out.className = "plan-output";
-    out.textContent = data.meal_plan;
+    out.innerHTML = marked.parse(data.meal_plan);
     out.insertAdjacentHTML("afterend", `<div class="kcal-pill">🎯 Hədəf: ${data.target_calories} kcal</div>`);
   } else {
     out.className = "plan-output";
@@ -605,7 +613,11 @@ function renderMessages(messages){
   messages.forEach(m => {
     const div = document.createElement("div");
     div.className = "msg " + (m.sender === "user" ? "user" : "api");
-    div.textContent = m.text;
+    if(m.sender === "user"){
+      div.textContent = m.text;
+    } else {
+      div.innerHTML = marked.parse(m.text);
+    }
     log.appendChild(div);
   });
   log.scrollTop = log.scrollHeight;
@@ -658,7 +670,7 @@ async function sendChat(){
   if(res.ok){
     const apiBubble = document.createElement("div");
     apiBubble.className = "msg api";
-    apiBubble.textContent = data.reply;
+    apiBubble.innerHTML = marked.parse(data.reply);
     log.appendChild(apiBubble);
     log.scrollTop = log.scrollHeight;
     if(!activeChatId){ activeChatId = data.chat_id; loadChats(); }
