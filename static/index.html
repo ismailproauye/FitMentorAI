@@ -179,7 +179,6 @@
   .plan-output:empty{display:none;}
   .plan-output.loading{color:var(--text-mid);font-style:italic;}
 
-  /* Markdown daxili elementlərin tənzimlənməsi */
   .plan-output p, .msg p { margin: 0 0 10px 0; }
   .plan-output ul, .msg ul { margin: 0 0 10px 20px; padding: 0; }
   .plan-output ol, .msg ol { margin: 0 0 10px 20px; padding: 0; }
@@ -432,7 +431,7 @@ async function apiGet(path){
   return { ok: res.ok, status: res.status, data };
 }
 
-fn errText(data){
+function errText(data){
   return data.detail ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : "Xəta baş verdi.";
 }
 
