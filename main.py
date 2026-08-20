@@ -14,9 +14,7 @@ import bcrypt
 from google import genai
 from google.genai import types
 import PIL.Image
-from dotenv import load_dotenv
 
-load_dotenv()
 
 # --- 1. DATABASE SETUP ---
 DATABASE_URL = "sqlite:///./fitmentor.db"
